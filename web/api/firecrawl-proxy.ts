@@ -6,7 +6,7 @@
  * once for the upstream call, and is never logged or stored. Everything else in
  * sink web runs in the browser.
  *
- * Source is intentionally tiny and open — see github.com/totalaudiopromo/sink-cli.
+ * Source is intentionally tiny and open — see github.com/chrisschouk/sink-cli.
  */
 
 export const config = { runtime: 'edge' }

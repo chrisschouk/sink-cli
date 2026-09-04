@@ -36,8 +36,7 @@ for library consumers.
 
 ## Publish flow (npm)
 
-Published as `datasink` (no scope). Current version 0.4.0 is not yet published to npm
-(the web demo was the focus; CLI behaviour is unchanged from 0.3.x).
+Published as `datasink` (no scope). Current version on npm is **0.4.0** (published 2026-06-11).
 
 **2FA gotcha**: interactive `npm publish` hits the 2FA wall in non-interactive environments.
 Use a granular **automation token** (npm account → Access Tokens → Generate New Token →

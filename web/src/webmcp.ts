@@ -76,9 +76,9 @@ export function initWebMcp(): void {
         return {
           catalogUrl: 'https://datasink.dev/.well-known/api-catalog',
           openApiUrl: 'https://datasink.dev/docs/openapi.json',
-          mcpServerCard: 'https://datasink.dev/.well-known/mcp/server-card.json',
           agentSkillsIndex: 'https://datasink.dev/.well-known/agent-skills/index.json',
           authMd: 'https://datasink.dev/auth.md',
+          llmsTxt: 'https://datasink.dev/llms.txt',
         }
       },
     })

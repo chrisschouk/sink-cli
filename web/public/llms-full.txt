@@ -1,116 +1,95 @@
-# datasink Extended Technical Specification & LLM Reference
+# datasink Extended Technical Spec
 
-> Full schema definitions, phase algorithms, cURL examples, and CLI parameter reference for AI agents, high-context LLMs, and automated integrations.
+> Accurate reference for AI agents and humans. Only endpoints and behaviours that exist in production are documented here.
 
 ## Overview
-`datasink` (published on npm as `datasink`, binary `sink`) cleans and enriches music PR contact lists through a 4-stage pipeline: `scrub` -> `rinse` -> `soak` -> `steep`.
+
+`datasink` (npm package name; CLI binary `sink`) cleans music PR contact lists through four phases: `scrub` → `rinse` → `soak` → `steep`.
+
+Repo: https://github.com/chrisschouk/sink-cli  
+Demo: https://datasink.dev  
+Install: `npx datasink scrub contacts.csv`
 
 ---
 
-## Technical Pipeline Phases
+## Pipeline phases
 
-### Phase 1: Scrub (Format & Deliverability Validation)
-- **Email Regex & Normalisation**: Lowercases domains, trims whitespace, standardizes separators.
-- **Typo Correction Engine**: Applies 200+ domain typo mappings (e.g., `hotmial.com` -> `hotmail.com`, `gamil.com` -> `gmail.com`).
-- **Disposable Domain Filter**: Checks against 3,000+ known disposable and burner email domains.
-- **MX Record Validation**: Checks domain DNS for active mail exchanger records.
-- **Role Account Tagging**: Identifies non-personal mailboxes (`info@`, `press@`, `contact@`, `editor@`).
+### Scrub
 
-### Phase 2: Rinse (Deduplication)
-- **Exact Email Matching**: Merges duplicate records sharing the same normalized email address.
-- **Fuzzy Name Matching**: Jaro-Winkler string similarity (threshold >= 0.92) across contact names within identical publication domains.
-- **Cross-Field Reconciliation**: Combines raw field metadata into single primary records, preserving audit histories in `phases[]`.
+- RFC-style email format checks, normalisation, UK domain typo correction
+- Disposable domain detection, role-based mailbox tagging (`press@`, `info@`, …)
+- MX verification (Node `dns` in CLI; Cloudflare DNS-over-HTTPS in browser — domains only)
 
-### Phase 3: Soak (LLM Metadata Enrichment)
-- **Provider Support**: Anthropic Claude (`claude-3-7-sonnet`, `claude-3-5-haiku`) or OpenAI (`gpt-4o`).
-- **Enrichment Target**: Extracts missing contact names, job titles, Instagram handles, music genres covered, and outlet locations.
+### Rinse
 
-### Phase 4: Steep (Targeting & Relevance Scoring)
-- **Outlet Web Scrape**: Uses Firecrawl (`/v1/scrape`) to retrieve fresh submission guidelines from publication websites.
-- **Relevance Scoring**: Evaluates candidate contacts against campaign genre tags and target music styles (score 0-100).
+- Exact email dedup (case-insensitive, keeps richer record)
+- Fuzzy name match (Jaro-Winkler, default threshold 0.92) within the same domain
+- Cross-field match by phone across different emails
 
----
+### Soak
 
-## Machine Schemas & Output Data Model
+- LLM enrichment (platform type, genre, geo, submission tips)
+- Providers: Anthropic or OpenAI via env keys / web BYOK panel
+- Silently skipped when no key is present
 
-### SinkRecord Schema (JSON)
-```json
-{
-  "id": "uuid-v4-string",
-  "raw": {
-    "name": "Jane Doe",
-    "email": "jane@musicblog.com",
-    "outlet": "The Music Blog"
-  },
-  "scrub": {
-    "email": {
-      "original": "jane@musicblog.com",
-      "normalised": "jane@musicblog.com",
-      "valid": true,
-      "confidence": "high",
-      "corrected": false,
-      "disposable": false,
-      "roleBased": false,
-      "catchAll": false,
-      "checks": {
-        "regex": true,
-        "mx": true
-      }
-    }
-  },
-  "rinse": {
-    "duplicate": false,
-    "mergedWith": null,
-    "matchType": null
-  },
-  "timestamp": "2026-07-25T22:00:00.000Z"
-}
-```
+### Steep
+
+- Scrapes outlet public pages (via Firecrawl) and extracts channels, portals, presenters, pitch hooks
+- Needs `FIRECRAWL_API_KEY` plus an LLM key; skipped when missing
+- Web demo proxies Firecrawl through `/api/firecrawl-proxy` because of CORS
 
 ---
 
-## cURL & API Integration Examples
+## HTTP endpoints that exist
 
-### 1. Health Check
+### GET /api/health
+
 ```bash
-curl -X GET https://datasink.dev/api/health \
-  -H "Accept: application/json"
+curl -s https://datasink.dev/api/health
+# {"status":"ok","version":"0.4.0","service":"datasink"}
 ```
 
-### 2. Machine Discovery Catalog
-```bash
-curl -X GET https://datasink.dev/.well-known/api-catalog \
-  -H "Accept: application/linkset+json"
-```
+### POST /api/firecrawl-proxy
 
-### 3. Agent Markdown Page Request
-```bash
-curl -X GET https://datasink.dev/ \
-  -H "Accept: text/markdown"
-```
+Body JSON: `{ "url": "https://example.com", "firecrawlKey": "fc-..." }`  
+Returns scraped markdown. The key is used once and not stored.
+
+There is **no** hosted `/api/mcp`, OAuth server, or agent registration API.
 
 ---
 
-## CLI Command Reference
+## CLI quick reference
 
 ```bash
-# Scrub contacts file
+npx datasink demo                 # sample data, no file needed
 npx datasink scrub contacts.csv
-
-# Run full pipeline with custom threshold
-npx datasink scrub contacts.csv --rinse --fuzzy-threshold 0.95
-
-# Spot-check individual email address
-npx datasink spot jane@musicblog.com
+npx datasink rinse contacts.csv
+npx datasink wash contacts.csv    # full pipeline
+npx datasink spot name@outlet.co.uk
+npx datasink inspect contacts.csv
 ```
+
+Global flags include `-o/--output`, `--format`, `--dry-run`, `--provider`, `--verbose`, `--json`.
 
 ---
 
-## Standards Compliance
-- **RFC 8288**: Web Linking via `Link` response headers.
-- **RFC 9727**: API Catalog specification (`/.well-known/api-catalog`).
-- **RFC 9728**: OAuth Protected Resource Metadata (`/.well-known/oauth-protected-resource`).
-- **RFC 9116**: Security vulnerability reporting (`/.well-known/security.txt`).
-- **SEP-1649**: Model Context Protocol Server Card (`/.well-known/mcp/server-card.json`).
-- **Agent Skills Discovery RFC v0.2.0**: Index at `/.well-known/agent-skills/index.json`.
-- **Content Signals**: robots.txt directives (`ai-train=no, search=yes, ai-input=no`).
+## Browser / WebMCP
+
+On datasink.dev, if the browser exposes `navigator.modelContext`, the page registers a `scrub_contacts` helper. That is in-page WebMCP only — not a remote MCP HTTP server.
+
+---
+
+## Discovery files
+
+- `/.well-known/api-catalog` — RFC 9727 linkset for the real API surface
+- `/.well-known/ai-plugin.json` — OpenAI plugin-style manifest (auth: none)
+- `/.well-known/agent-skills/` — skill markdown for agents
+- `/.well-known/security.txt` — vulnerability contact
+- `/llms.txt`, `/llms-full.txt` — this documentation
+- `/auth.md` — BYOK notes (no OAuth)
+
+---
+
+## Licence
+
+MIT

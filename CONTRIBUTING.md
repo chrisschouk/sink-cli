@@ -5,7 +5,7 @@ Thanks for your interest in contributing. This guide covers what you need to get
 ## Dev Setup
 
 ```bash
-git clone https://github.com/totalaudiopromo/sink-cli.git
+git clone https://github.com/chrisschouk/sink-cli.git
 cd sink-cli
 pnpm install
 pnpm build
@@ -20,6 +20,8 @@ pnpm build
 | `pnpm test` | Run all tests (Vitest) |
 | `pnpm test:watch` | Tests in watch mode |
 | `pnpm typecheck` | Type-check without emitting |
+| `pnpm lint` | ESLint on `src/` and `test/` |
+| `pnpm format:check` | Prettier check |
 
 ## Running locally
 

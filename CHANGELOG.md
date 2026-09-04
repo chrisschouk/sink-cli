@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- CI install failed under pnpm 11 supply-chain checks because the SheetJS CDN
+  `xlsx` tarball had no lockfile integrity hash. Integrity is now recorded.
+- Agent discovery docs claimed OAuth, MCP HTTP, and registration endpoints that
+  do not exist. Discovery files now match the real surface: CLI, browser demo,
+  `/api/health`, and `/api/firecrawl-proxy`.
+- README pointed at the Vercel preview hostname and an outdated org path; primary
+  demo link is datasink.dev and GitHub links use `chrisschouk/sink-cli`.
+
+### Added
+
+- `GET /api/health` for uptime checks and the OpenAPI catalog.
+- `sink demo` documented in the README command table.
+
 ## [0.4.0] - 2026-06-11
 
 ### Added

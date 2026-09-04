@@ -9,7 +9,7 @@
       "headers": [
         {
           "key": "Link",
-          "value": "</.well-known/api-catalog>; rel=\"api-catalog\", </docs/api>; rel=\"service-doc\", </.well-known/mcp/server-card.json>; rel=\"mcp-server-card\", </.well-known/oauth-protected-resource>; rel=\"oauth-protected-resource\", </.well-known/agent-skills/index.json>; rel=\"agent-skills\", </.well-known/ai-plugin.json>; rel=\"ai-plugin\", </llms.txt>; rel=\"help\", </llms-full.txt>; rel=\"llms-full\", </.well-known/security.txt>; rel=\"security-policy\""
+          "value": "</.well-known/api-catalog>; rel=\"api-catalog\", </docs/openapi.json>; rel=\"service-doc\", </.well-known/agent-skills/index.json>; rel=\"agent-skills\", </.well-known/ai-plugin.json>; rel=\"ai-plugin\", </llms.txt>; rel=\"help\", </llms-full.txt>; rel=\"llms-full\", </.well-known/security.txt>; rel=\"security-policy\""
         }
       ]
     },
@@ -19,42 +19,6 @@
         {
           "key": "Content-Type",
           "value": "application/linkset+json"
-        }
-      ]
-    },
-    {
-      "source": "/.well-known/openid-configuration",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "application/json"
-        }
-      ]
-    },
-    {
-      "source": "/.well-known/oauth-authorization-server",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "application/json"
-        }
-      ]
-    },
-    {
-      "source": "/.well-known/oauth-protected-resource",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "application/json"
-        }
-      ]
-    },
-    {
-      "source": "/.well-known/mcp/server-card.json",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "application/json"
         }
       ]
     },

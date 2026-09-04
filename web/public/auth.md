@@ -1,38 +1,30 @@
-# datasink.dev auth.md
+# datasink.dev — how auth works
 
-Agent registration and authentication specifications for the datasink platform.
+datasink does not run a hosted OAuth or agent registration server.
 
-## Agent Audience
-This service accepts registration requests from automated AI agents, browser extensions, and programmatic integrations seeking to execute contact hygiene operations (scrub, rinse, soak, steep).
+## Browser demo ([datasink.dev](https://datasink.dev))
 
-## Registration & Provisioning
-Agents register dynamically by issuing a request to the registration endpoint:
-- **Registration URI**: `https://datasink.dev/agent/auth`
-- **Claim URI**: `https://datasink.dev/agent/claim`
-- **Revocation URI**: `https://datasink.dev/agent/revoke`
+- Scrub and rinse run entirely in your browser.
+- Soak and steep use **bring-your-own-key**: you paste an Anthropic or OpenAI key (and optionally a Firecrawl key for steep). Keys stay in the browser session and are never stored on our servers.
+- The only server endpoint is `/api/firecrawl-proxy`, which forwards one scrape request with the Firecrawl key you supply for that call.
 
-## Supported Identity Types & Flows
+## CLI (`npx datasink`)
 
-### 1. Anonymous Access
-- **Supported Identity**: `anonymous`
-- **Credential Type**: `bearer`
-- Allows restricted rate-limited access for basic scrubbing and catalog discovery.
+Set provider keys in your environment when you want AI phases:
 
-### 2. Identity Assertion
-- **Supported Identity**: `identity_assertion`
-- **Assertion Types**:
-  - `urn:ietf:params:oauth:token-type:id-jag` (Identity-JWT Assertion Grant)
-  - `verified_email`
-- **Credential Type**: `bearer`
+```bash
+export ANTHROPIC_API_KEY=sk-ant-...
+# or
+export OPENAI_API_KEY=sk-...
 
-## Authentication & Authorization Metadata
-- **Protected Resource Metadata (PRM)**: [/.well-known/oauth-protected-resource](https://datasink.dev/.well-known/oauth-protected-resource)
-- **OAuth Authorization Server**: [/.well-known/oauth-authorization-server](https://datasink.dev/.well-known/oauth-authorization-server)
-- **Bearer Token Transmission**: Pass credentials in the standard HTTP Header:
-  `Authorization: Bearer <access_token>`
+# steep also needs:
+export FIRECRAWL_API_KEY=fc-...
 
-## Scopes Supported
-- `read`: Query public API catalogs and documentation.
-- `scrub`: Perform email syntax, typo mapping, and format validation.
-- `enrich`: Perform contact enrichment and web metadata queries.
-- `write`: Modify and save processed contact datasets.
+npx datasink wash contacts.csv
+```
+
+Without keys, scrub / rinse / inspect / spot / demo still work. Soak and steep are skipped with a clear warning.
+
+## What is not here
+
+There is no `/oauth/*`, no agent claim/revoke API, and no server-side bearer token store. Discovery docs that implied those endpoints were wrong and have been removed.
