@@ -18,10 +18,10 @@ export function CtaPanel() {
         </p>
         <a
           className="text-link"
-          href="https://github.com/totalaudiopromo/sink-cli"
+          href="https://github.com/chrisschouk/sink-cli"
           rel="noopener noreferrer"
         >
-          github.com/totalaudiopromo/sink-cli →
+          github.com/chrisschouk/sink-cli →
         </a>
       </div>
 

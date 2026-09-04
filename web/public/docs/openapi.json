@@ -3,7 +3,7 @@
   "info": {
     "title": "datasink API",
     "description": "Small HTTP surface for the datasink web demo. Scrub/rinse/soak run in the browser; only health and the Firecrawl proxy are server-side.",
-    "version": "0.4.0",
+    "version": "0.4.1",
     "contact": {
       "name": "Total Audio Promo",
       "url": "https://totalaudiopromo.com",
@@ -29,7 +29,7 @@
                   "type": "object",
                   "properties": {
                     "status": { "type": "string", "example": "ok" },
-                    "version": { "type": "string", "example": "0.4.0" },
+                    "version": { "type": "string", "example": "0.4.1" },
                     "service": { "type": "string", "example": "datasink" }
                   }
                 }
