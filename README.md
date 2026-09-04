@@ -9,7 +9,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node](https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg)](https://nodejs.org)
 
-**Data hygiene for music PR.** Scrub, rinse, and soak your contact lists.
+**Data hygiene for music PR.** Scrub, rinse, soak, and steep your contact lists.
 
 > The product is **sink**; the binary is `sink`. It's published on npm as
 > [`datasink`](https://www.npmjs.com/package/datasink) because the `sink` name
@@ -127,7 +127,8 @@ One scrape powers every contact at that outlet. The CLI caches scrapes in
 memory for the duration of a run; a persistent 30-day cache is available to
 programmatic consumers that supply their own `CacheAdapter` (see below).
 
-Requires `FIRECRAWL_API_KEY` and an LLM provider key. Phase is silently skipped if creds are missing.
+Requires `FIRECRAWL_API_KEY` and an LLM provider key. Skipped with a warning if
+creds are missing.
 
 ## Global Flags
 
@@ -140,7 +141,8 @@ Requires `FIRECRAWL_API_KEY` and an LLM provider key. Phase is silently skipped 
 -q, --quiet                Suppress all output except errors
 --json                     JSON stdout (for piping)
 --no-colour                Disable colours
---provider <name>          Enrichment provider (anthropic|openai)
+--provider <name>          Enrichment model shortcut (haiku|sonnet|opus|codex|gpt-4o-mini)
+                           Also accepts anthropic|openai (default model for that vendor)
 ```
 
 ## Exit Codes
@@ -159,14 +161,14 @@ Requires `FIRECRAWL_API_KEY` and an LLM provider key. Phase is silently skipped 
 
 ```bash
 export ANTHROPIC_API_KEY=sk-ant-...
-sink soak contacts.csv --provider anthropic
+sink soak contacts.csv --provider haiku    # or sonnet / opus
 ```
 
 ### OpenAI
 
 ```bash
 export OPENAI_API_KEY=sk-...
-sink soak contacts.csv --provider openai
+sink soak contacts.csv --provider gpt-4o-mini   # or codex
 ```
 
 ## Input Format

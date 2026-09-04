@@ -69,14 +69,18 @@ src/
     scrub/            Email validation, parsing, typo correction
     rinse/            Deduplication strategies
     soak/             AI enrichment providers
+    steep/            Outlet channel discovery (Firecrawl + LLM)
   output/             CSV/JSON/JSONL formatters
   ui/                 Terminal UI (format helpers, TUI, interactive)
   utils/              MX cache, helpers
+web/                  Browser demo (Vite + React) → datasink.dev
+api/                  Vercel edge functions (health, Firecrawl proxy)
 test/
   fixtures/           Sample CSV files
   scrub/              Scrub phase tests
   rinse/              Rinse phase tests
   soak/               Provider tests
+  steep/              Steep phase tests
   pipeline.test.ts    Integration tests
 ```
 
