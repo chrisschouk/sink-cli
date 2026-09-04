@@ -249,6 +249,11 @@ export async function runInteractive(): Promise<{
         label: 'OpenAI Codex',
         hint: hasOpenAIKey ? undefined : chalk.red('OPENAI_API_KEY not set'),
       },
+      {
+        value: 'custom',
+        label: 'Custom model ID',
+        hint: 'any Anthropic or OpenAI model string',
+      },
       { value: 'skip', label: 'Skip enrichment' },
     ]
 
@@ -260,6 +265,53 @@ export async function runInteractive(): Promise<{
     if (!p.isCancel(provider)) {
       if (provider === 'skip') {
         opts.provider = undefined
+      } else if (provider === 'custom') {
+        const vendor = await p.select({
+          message: 'Vendor',
+          options: [
+            {
+              value: 'anthropic',
+              label: 'Anthropic',
+              hint: hasAnthropicKey ? undefined : chalk.red('ANTHROPIC_API_KEY not set'),
+            },
+            {
+              value: 'openai',
+              label: 'OpenAI',
+              hint: hasOpenAIKey ? undefined : chalk.red('OPENAI_API_KEY not set'),
+            },
+          ],
+        })
+        if (p.isCancel(vendor)) {
+          opts.provider = undefined
+        } else {
+          opts.provider = vendor
+          const modelId = await p.text({
+            message: 'Model ID',
+            placeholder: vendor === 'anthropic' ? 'claude-sonnet-4-5-20250514' : 'gpt-4.1-mini',
+            validate: (value) => {
+              if (!value?.trim()) return 'A model ID is required.'
+            },
+          })
+          if (!p.isCancel(modelId) && modelId?.trim()) {
+            opts.model = modelId.trim()
+          }
+
+          const needsAnthropic = vendor === 'anthropic' && !hasAnthropicKey
+          const needsOpenAI = vendor === 'openai' && !hasOpenAIKey
+          if (needsAnthropic || needsOpenAI) {
+            const envVar = needsAnthropic ? 'ANTHROPIC_API_KEY' : 'OPENAI_API_KEY'
+            const apiKey = await p.text({
+              message: `${envVar} not set. Enter it now (for this session only):`,
+              placeholder: 'sk-...',
+              validate: (value) => {
+                if (!value?.trim()) return `${envVar} is required.`
+              },
+            })
+            if (!p.isCancel(apiKey) && apiKey) {
+              process.env[envVar] = apiKey.trim()
+            }
+          }
+        }
       } else {
         opts.provider = provider
 

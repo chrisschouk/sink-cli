@@ -13,6 +13,12 @@ export { scrub } from './phases/scrub/index.js'
 export { rinse } from './phases/rinse/index.js'
 export { soak } from './phases/soak/index.js'
 export { steep } from './phases/steep/index.js'
+export {
+  resolveLlmChoice,
+  expandModelId,
+  MODEL_SHORTCUTS,
+  KNOWN_PROVIDERS,
+} from './phases/soak/models.js'
 
 // Steep cache adapter (consumers can implement against the CacheAdapter interface)
 export { InMemoryCache } from './phases/steep/cache/in-memory.js'

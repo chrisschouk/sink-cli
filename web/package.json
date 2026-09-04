@@ -11,10 +11,11 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
     "datasink": "workspace:*",
+    "openai": "^4.104.0",
+    "posthog-js": "^1.407.2",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
-    "posthog-js": "^1.407.2"
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
   "devDependencies": {
     "@types/react": "^19.2.0",

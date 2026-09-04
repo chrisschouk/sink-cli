@@ -26,6 +26,7 @@ import {
   LOGO_LINES,
 } from './ui/format.js'
 import { VERSION } from './version.js'
+import { resolveLlmChoice } from './phases/soak/models.js'
 import type { SinkRecord, SinkConfig, Phase } from './types.js'
 
 // Load .env if present (works on Node 20+, no dependencies)
@@ -57,23 +58,38 @@ const EXIT = {
 } as const
 
 // ---------------------------------------------------------------------------
-// Provider shortcuts — map friendly names to provider + model
+// LLM vendor + model (model-agnostic: any Anthropic/OpenAI ID via --model)
 // ---------------------------------------------------------------------------
 
-const PROVIDER_SHORTCUTS: Record<string, { provider: string; model: string }> = {
-  haiku: { provider: 'anthropic', model: 'claude-haiku-4-5-20251001' },
-  sonnet: { provider: 'anthropic', model: 'claude-sonnet-4-5-20250514' },
-  opus: { provider: 'anthropic', model: 'claude-opus-4-0-20250514' },
-  codex: { provider: 'openai', model: 'codex-mini-latest' },
-  'gpt-4o-mini': { provider: 'openai', model: 'gpt-4o-mini' },
+function applyLlmOverrides(
+  config: SinkConfig,
+  choice: { provider?: string; model?: string },
+): void {
+  const { provider, model } = choice
+  if (!provider) return
+
+  config.soak.provider = provider
+  config.steep.extractor = provider
+
+  if (!model) return
+
+  const soakBlock = (config.soak[provider] as Record<string, unknown> | undefined) ?? {}
+  config.soak[provider] = { ...soakBlock, model }
+
+  const steepBlock = (config.steep[provider] as Record<string, unknown> | undefined) ?? {}
+  config.steep[provider] = { ...steepBlock, model }
 }
 
-function resolveProvider(name?: string): { provider?: string; model?: string } {
-  if (!name) return {}
-  const shortcut = PROVIDER_SHORTCUTS[name]
-  if (shortcut) return shortcut
-  // Pass through as-is (e.g. "anthropic", "openai")
-  return { provider: name }
+function resolveCliLlm(opts: { provider?: string; model?: string }): {
+  provider?: string
+  model?: string
+} {
+  const result = resolveLlmChoice({ provider: opts.provider, model: opts.model })
+  if (result.error) {
+    console.error(`\n  Error: ${result.error}\n`)
+    process.exit(EXIT.CONFIG_ERROR)
+  }
+  return { provider: result.provider, model: result.model }
 }
 
 // ---------------------------------------------------------------------------
@@ -113,6 +129,7 @@ async function runPhases(
     noColour?: boolean
     smtp?: boolean
     provider?: string
+    model?: string
     demo?: boolean
     url?: string
     skipIntro?: boolean
@@ -131,17 +148,19 @@ async function runPhases(
     )
   }
 
-  const { provider: providerName, model: providerModel } = resolveProvider(opts.provider)
+  const llm = resolveCliLlm({ provider: opts.provider, model: opts.model })
 
   const config = await loadConfig({
     configPath: opts.config,
     overrides: {
       scrub: { smtp: opts.smtp },
       soak: {
-        ...(providerName ? { provider: providerName } : undefined),
-        ...(providerName && providerModel
-          ? { [providerName]: { model: providerModel } }
-          : undefined),
+        ...(llm.provider ? { provider: llm.provider } : undefined),
+        ...(llm.provider && llm.model ? { [llm.provider]: { model: llm.model } } : undefined),
+      },
+      steep: {
+        ...(llm.provider ? { extractor: llm.provider } : undefined),
+        ...(llm.provider && llm.model ? { [llm.provider]: { model: llm.model } } : undefined),
       },
       output: {
         format: (opts.format as SinkConfig['output']['format']) ?? 'csv',
@@ -293,7 +312,14 @@ async function runInspect(
 
 async function runTui(
   rawPath: string | undefined,
-  opts: { smtp?: boolean; provider?: string; config?: string; demo?: boolean; url?: string },
+  opts: {
+    smtp?: boolean
+    provider?: string
+    model?: string
+    config?: string
+    demo?: boolean
+    url?: string
+  },
 ): Promise<void> {
   // TUI currently requires a file path for its React component
   // For demo/url/stdin, write to a temp file
@@ -312,16 +338,7 @@ async function runTui(
   const config = await loadConfig({ configPath: opts.config })
   if (opts.smtp) config.scrub.smtp = true
 
-  const { provider: providerName, model: providerModel } = resolveProvider(opts.provider)
-  if (providerName) config.soak.provider = providerName
-  if (providerName && providerModel) {
-    ;(config.soak as Record<string, unknown>)[providerName] = {
-      ...((config.soak as Record<string, unknown>)[providerName] as
-        | Record<string, unknown>
-        | undefined),
-      model: providerModel,
-    }
-  }
+  applyLlmOverrides(config, resolveCliLlm({ provider: opts.provider, model: opts.model }))
 
   const { render } = await import('ink')
   const { App } = await import('./ui/tui/app.js')
@@ -394,11 +411,14 @@ Examples:
   ${chalk.dim('$')} sink scrub --url https://...           Fetch & validate from URL
   ${chalk.dim('$')} pbpaste | sink scrub -                 Pipe from clipboard
   ${chalk.dim('$')} sink wash contacts.csv --provider sonnet   Enrich with Claude Sonnet
+  ${chalk.dim('$')} sink soak contacts.csv --provider openai --model gpt-4.1-mini
   ${chalk.dim('$')} sink spot sarah@bbc.co.uk              Check a single email
   ${chalk.dim('$')} sink inspect contacts.csv              Data quality score
 
 Providers:
-  haiku, sonnet, opus (Anthropic) | gpt-4o-mini, codex (OpenAI)
+  Vendors: anthropic | openai
+  Shortcuts: haiku, sonnet, opus | gpt-4o-mini, codex
+  Any model ID: --provider anthropic|openai --model <id>
 `,
   )
 
@@ -413,7 +433,14 @@ const globalOpts = (cmd: typeof program) =>
     .option('--json', 'JSON stdout (for piping)')
     .option('--no-colour', 'disable colours')
     .option('--smtp', '(deprecated, no-op) SMTP verification removed in 0.3.0')
-    .option('--provider <name>', 'enrichment provider (haiku|sonnet|opus|codex|gpt-4o-mini)')
+    .option(
+      '--provider <name>',
+      'LLM vendor or shortcut (anthropic|openai|haiku|sonnet|opus|codex|gpt-4o-mini)',
+    )
+    .option(
+      '--model <id>',
+      'any Anthropic/OpenAI model ID (overrides shortcut default; use with --provider)',
+    )
     .option('--demo', 'use built-in sample data (no file needed)')
     .option('--url <url>', 'fetch CSV from a URL')
 
@@ -453,7 +480,11 @@ globalOpts(
 program
   .command('demo')
   .description('Run the full pipeline on sample data (no file needed)')
-  .option('--provider <name>', 'enrichment provider (haiku|sonnet|opus|codex|gpt-4o-mini)')
+  .option(
+    '--provider <name>',
+    'LLM vendor or shortcut (anthropic|openai|haiku|sonnet|opus|codex|gpt-4o-mini)',
+  )
+  .option('--model <id>', 'any Anthropic/OpenAI model ID')
   .option('--smtp', '(deprecated, no-op) SMTP verification removed in 0.3.0')
   .option('--verbose', 'detailed output')
   .option('--no-colour', 'disable colours')
@@ -510,6 +541,7 @@ program.action(async () => {
     const interactiveOpts = {
       smtp: result.options?.smtp as boolean,
       provider: result.options?.provider as string,
+      model: result.options?.model as string | undefined,
       demo: result.options?.demo as boolean,
       verbose: result.options?.verbose as boolean,
     }
@@ -519,18 +551,13 @@ program.action(async () => {
       const records = parseInputText(result.text)
       const config = await loadConfig()
 
-      const { provider: providerName, model: providerModel } = resolveProvider(
-        interactiveOpts.provider,
+      applyLlmOverrides(
+        config,
+        resolveCliLlm({
+          provider: interactiveOpts.provider,
+          model: interactiveOpts.model,
+        }),
       )
-      if (providerName) config.soak.provider = providerName
-      if (providerName && providerModel) {
-        ;(config.soak as Record<string, unknown>)[providerName] = {
-          ...((config.soak as Record<string, unknown>)[providerName] as
-            | Record<string, unknown>
-            | undefined),
-          model: providerModel,
-        }
-      }
 
       const phases: Phase[] = []
       switch (result.command) {

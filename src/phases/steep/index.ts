@@ -9,6 +9,7 @@ import { getScraper } from './registry.js'
 import { getProvider as getSoakProvider } from '../soak/registry.js'
 import { buildSteepPrompt, calculateOutletConfidence } from './prompt.js'
 import { outletToDomain, SteepConfigError } from './provider.js'
+import { SoakConfigError } from '../soak/provider.js'
 import { InMemoryCache } from './cache/in-memory.js'
 
 const DEFAULT_CACHE_TTL = 30 * 24 * 60 * 60 * 1000 // 30 days
@@ -130,8 +131,8 @@ export async function steep(
     await scraper.init(scraperConfig)
     await extractor.init(extractorConfig)
   } catch (err) {
-    if (err instanceof SteepConfigError) {
-      // Skip the phase silently if creds are missing -- mirrors soak's behaviour
+    if (err instanceof SteepConfigError || err instanceof SoakConfigError) {
+      // Skip the phase if creds are missing -- mirrors soak's behaviour
       return records
     }
     throw err

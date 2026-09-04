@@ -1,20 +1,21 @@
 /**
  * Browser steep runner — outlet research, client-side, BYO key.
  *
- * Mirrors src/phases/steep/index.ts. Scraping goes through the thin
- * /api/firecrawl-proxy Edge Function (Firecrawl's API blocks browser CORS); the
- * user's Firecrawl key is passed per-request and never stored. Extraction calls
- * Anthropic directly (dangerouslyAllowBrowser) reusing the pure prompt/confidence
- * helpers from datasink/core. Progress is narrated as TerminalLine events.
+ * Scraping goes through /api/firecrawl-proxy (Firecrawl blocks browser CORS).
+ * Extraction is model-agnostic: Anthropic or OpenAI with any model ID.
  */
 
 import Anthropic from '@anthropic-ai/sdk'
+import OpenAI from 'openai'
 import { buildSteepPrompt, calculateOutletConfidence, outletToDomain } from 'datasink/core'
 import type { SinkRecord, SteepResult } from 'datasink/core'
 import type { OnLine } from './engine'
 import { line } from './engine'
 
-const DEFAULT_MODEL = 'claude-haiku-4-5-20251001'
+const DEFAULT_MODELS = {
+  anthropic: 'claude-haiku-4-5-20251001',
+  openai: 'gpt-4o-mini',
+} as const
 const SUBPATHS = ['', '/about', '/contact', '/team', '/presenters', '/submit', '/submissions']
 
 interface ExtractedContact {
@@ -137,12 +138,38 @@ function detailFor(result: SteepResult, pages: number): string {
 export async function runSteepBrowser(
   records: SinkRecord[],
   onLine: OnLine,
-  opts: { anthropicKey: string; firecrawlKey: string; model?: string },
+  opts: {
+    provider: 'anthropic' | 'openai'
+    apiKey: string
+    firecrawlKey: string
+    model?: string
+  },
 ): Promise<SteepRunResult> {
   onLine(line('phase-header', { name: 'Steep', label: 'outlet research' }))
 
-  const client = new Anthropic({ apiKey: opts.anthropicKey, dangerouslyAllowBrowser: true })
-  const model = opts.model ?? DEFAULT_MODEL
+  const model = opts.model?.trim() || DEFAULT_MODELS[opts.provider]
+  const providerTag = `firecrawl-${opts.provider}`
+
+  const complete = async (prompt: string): Promise<string> => {
+    if (opts.provider === 'openai') {
+      const client = new OpenAI({ apiKey: opts.apiKey, dangerouslyAllowBrowser: true })
+      const response = await client.chat.completions.create({
+        model,
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: 1024,
+        response_format: { type: 'json_object' },
+      })
+      return response.choices[0]?.message?.content ?? ''
+    }
+    const client = new Anthropic({ apiKey: opts.apiKey, dangerouslyAllowBrowser: true })
+    const response = await client.messages.create({
+      model,
+      max_tokens: 1024,
+      messages: [{ role: 'user', content: prompt }],
+    })
+    const block = response.content[0]
+    return block?.type === 'text' ? block.text : ''
+  }
 
   // Group non-duplicate records by outlet domain — one scrape per outlet.
   const grouped = new Map<string, SinkRecord[]>()
@@ -174,7 +201,7 @@ export async function runSteepBrowser(
 
     if (!scrape.text) {
       const empty: SteepResult = {
-        provider: 'firecrawl-anthropic',
+        provider: providerTag,
         outletDomain: domain,
         scrapedAt: new Date().toISOString(),
         cacheAge: 0,
@@ -193,20 +220,14 @@ export async function runSteepBrowser(
 
     let payload: ExtractedPayload | null
     try {
-      const response = await client.messages.create({
-        model,
-        max_tokens: 1024,
-        messages: [{ role: 'user', content: prompt }],
-      })
-      const block = response.content[0]
-      payload = parseExtraction(block?.type === 'text' ? block.text : '')
+      payload = parseExtraction(await complete(prompt))
     } catch {
       payload = null
     }
 
     if (!payload) {
       const partial: SteepResult = {
-        provider: 'firecrawl-anthropic',
+        provider: providerTag,
         outletDomain: domain,
         scrapedAt: new Date().toISOString(),
         cacheAge: 0,
@@ -224,7 +245,7 @@ export async function runSteepBrowser(
     if (hasPortalOrEmail) outletsWithPortal += 1
 
     const baseResult: SteepResult = {
-      provider: 'firecrawl-anthropic',
+      provider: providerTag,
       outletDomain: domain,
       scrapedAt: new Date().toISOString(),
       cacheAge: 0,

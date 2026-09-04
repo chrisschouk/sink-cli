@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Model-agnostic LLM selection.** `--model <id>` accepts any Anthropic or
+  OpenAI model string; `--provider` takes vendors (`anthropic|openai`) or
+  shortcuts. The same choice applies to soak and steep. Web BYOK panel offers
+  either vendor plus a free-form model field.
+- `GET /api/health` for uptime checks and the OpenAPI catalog.
+- `sink demo` documented in the README command table.
+
 ### Fixed
 
 - Vercel git deploys were building the repo root and looking for `public/`,
@@ -24,11 +33,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   demo link is datasink.dev and GitHub links use `chrisschouk/sink-cli`.
 - README provider flags and tagline brought in line with the CLI (`haiku|sonnet|…`,
   four-phase strapline).
-
-### Added
-
-- `GET /api/health` for uptime checks and the OpenAPI catalog.
-- `sink demo` documented in the README command table.
 
 ## [0.4.0] - 2026-06-11
 

@@ -1,17 +1,13 @@
 import type { SoakProvider, SoakResult, SinkRecord } from '../../../types.js'
 import { SoakConfigError } from '../provider.js'
 import { buildPrompt, calculateConfidence } from '../prompt.js'
-
-const MODEL_ALIASES: Record<string, string> = {
-  codex: 'codex-mini-latest',
-  'gpt-4o-mini': 'gpt-4o-mini',
-}
+import { defaultModelFor, expandModelId } from '../models.js'
 
 export class OpenAIProvider implements SoakProvider {
   name = 'openai'
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- lazy-loaded SDK
   private client: any = null
-  private model = 'gpt-4o-mini'
+  private model = defaultModelFor('openai')
 
   async init(config: Record<string, unknown>): Promise<void> {
     const apiKey = (config.apiKey as string) || process.env.OPENAI_API_KEY
@@ -20,8 +16,7 @@ export class OpenAIProvider implements SoakProvider {
     const { default: OpenAI } = await import('openai')
     this.client = new OpenAI({ apiKey })
     if (config.model) {
-      const alias = MODEL_ALIASES[config.model as string]
-      this.model = alias ?? (config.model as string)
+      this.model = expandModelId(config.model as string)
     }
   }
 

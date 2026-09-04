@@ -110,7 +110,9 @@ Enriches contacts with AI:
 - Submission guidelines
 - Pitch tips
 
-Supports **Anthropic** (Claude Haiku) and **OpenAI** (GPT-4o-mini).
+Supports **Anthropic** and **OpenAI** with any model ID those vendors accept.
+CLI shortcuts (`haiku`, `sonnet`, `opus`, `gpt-4o-mini`, `codex`) are convenience
+defaults only — use `--provider anthropic|openai --model <id>` for anything else.
 
 ### Steep
 
@@ -141,8 +143,8 @@ creds are missing.
 -q, --quiet                Suppress all output except errors
 --json                     JSON stdout (for piping)
 --no-colour                Disable colours
---provider <name>          Enrichment model shortcut (haiku|sonnet|opus|codex|gpt-4o-mini)
-                           Also accepts anthropic|openai (default model for that vendor)
+--provider <name>          LLM vendor or shortcut (anthropic|openai|haiku|sonnet|opus|codex|gpt-4o-mini)
+--model <id>               Any Anthropic/OpenAI model ID (overrides shortcut default)
 ```
 
 ## Exit Codes
@@ -157,18 +159,24 @@ creds are missing.
 
 ## Provider Setup
 
+Sink is model-agnostic across Anthropic and OpenAI. Shortcuts pick a convenient
+default; `--model` accepts any current model ID from that vendor. The same
+choice applies to both soak and steep.
+
 ### Anthropic
 
 ```bash
 export ANTHROPIC_API_KEY=sk-ant-...
-sink soak contacts.csv --provider haiku    # or sonnet / opus
+sink soak contacts.csv --provider haiku
+sink soak contacts.csv --provider anthropic --model claude-sonnet-4-5-20250514
 ```
 
 ### OpenAI
 
 ```bash
 export OPENAI_API_KEY=sk-...
-sink soak contacts.csv --provider gpt-4o-mini   # or codex
+sink soak contacts.csv --provider gpt-4o-mini
+sink soak contacts.csv --provider openai --model gpt-4.1-mini
 ```
 
 ## Input Format
