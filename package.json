@@ -1,6 +1,6 @@
 {
   "name": "datasink",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "sink \u2014 data hygiene for music PR. Scrub, rinse, soak, steep your contact lists. The `sink` CLI, published as datasink.",
   "license": "MIT",
   "type": "module",

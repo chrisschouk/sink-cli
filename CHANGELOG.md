@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-09-04
+
 ### Added
 
 - **Model-agnostic LLM selection.** `--model <id>` accepts any Anthropic or
@@ -33,6 +35,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   demo link is datasink.dev and GitHub links use `chrisschouk/sink-cli`.
 - README provider flags and tagline brought in line with the CLI (`haiku|sonnet|…`,
   four-phase strapline).
+- npm package metadata still pointed at `totalaudiopromo/sink-cli`; homepage,
+  repository, and bugs now use datasink.dev / `chrisschouk/sink-cli`.
 
 ## [0.4.0] - 2026-06-11
 

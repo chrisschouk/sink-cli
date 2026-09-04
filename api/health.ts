@@ -9,7 +9,7 @@ export default function handler(): Response {
   return new Response(
     JSON.stringify({
       status: 'ok',
-      version: '0.4.0',
+      version: '0.4.1',
       service: 'datasink',
     }),
     {

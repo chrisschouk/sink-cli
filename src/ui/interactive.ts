@@ -11,7 +11,7 @@ function getLogo(): string {
   return [
     '',
     chalk.cyan(LOGO_LINES[0]),
-    `${chalk.cyan(LOGO_LINES[1])}   ${chalk.dim('github.com/totalaudiopromo/sink-cli')}`,
+    `${chalk.cyan(LOGO_LINES[1])}   ${chalk.dim('github.com/chrisschouk/sink-cli')}`,
     `${chalk.cyan(LOGO_LINES[2])}   ${chalk.dim('Data hygiene for music PR.')}`,
     '',
   ].join('\n')
