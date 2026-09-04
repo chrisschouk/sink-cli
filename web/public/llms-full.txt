@@ -46,7 +46,7 @@ Install: `npx datasink scrub contacts.csv`
 
 ```bash
 curl -s https://datasink.dev/api/health
-# {"status":"ok","version":"0.4.0","service":"datasink"}
+# {"status":"ok","version":"0.4.1","service":"datasink"}
 ```
 
 ### POST /api/firecrawl-proxy
