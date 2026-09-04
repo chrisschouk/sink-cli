@@ -1,20 +1,34 @@
 # datasink Contact Hygiene Skill
 
-Clean, format, deduplicate, and enrich contact CSV lists for music PR campaigns.
+Clean, deduplicate, and enrich music PR contact lists with the `sink` CLI (npm: `datasink`) or the browser demo at https://datasink.dev.
 
-## Overview
-datasink provides 4 distinct data hygiene phases:
-1. **Scrub**: Validates email syntax, detects domain typos, normalizes names.
-2. **Rinse**: Deduplicates entries across email addresses, full names, and domains.
-3. **Soak**: Enriches outlet and contact data using web search and LLM extraction.
-4. **Steep**: Segments lists and scores contact relevance for target music genres.
+## Phases
 
-## WebMCP Tools Available
-In the browser, use `navigator.modelContext` tools:
-- `scrub_contacts`: Run format and typo validation.
-- `rinse_contacts`: Remove duplicate contacts.
+1. **Scrub** — email format, typos, disposable domains, role accounts, MX
+2. **Rinse** — exact-email / fuzzy-name / cross-field dedup
+3. **Soak** — LLM enrichment (needs Anthropic or OpenAI key)
+4. **Steep** — outlet channel discovery via Firecrawl + LLM (needs keys)
 
-## CLI Usage
-\`\`\`bash
+## CLI
+
+```bash
+npx datasink demo
 npx datasink scrub contacts.csv
-\`\`\`
+npx datasink wash contacts.csv
+npx datasink spot name@outlet.co.uk
+```
+
+Keys (optional; soak/steep skipped without them):
+
+```bash
+export ANTHROPIC_API_KEY=sk-ant-...
+export FIRECRAWL_API_KEY=fc-...
+```
+
+## Browser
+
+https://datasink.dev — drop CSV/XLSX. Scrub/rinse are local. AI phases use bring-your-own-key.
+
+## Source
+
+https://github.com/chrisschouk/sink-cli

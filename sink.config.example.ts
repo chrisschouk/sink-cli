@@ -24,24 +24,27 @@ const config: Partial<SinkConfig> = {
   },
 
   soak: {
-    // Which AI provider to use for enrichment
-    // Can also use shortcuts via CLI: --provider haiku|sonnet|opus|codex|gpt-4o-mini
+    // Vendor: 'anthropic' | 'openai'. CLI shortcuts: --provider haiku|sonnet|opus|codex|gpt-4o-mini
+    // Any model ID: --provider anthropic --model claude-…  /  --provider openai --model gpt-…
     provider: 'anthropic',
 
-    // Anthropic config
-    // Models: 'claude-haiku-4-5-20251001' (fast/cheap), 'claude-sonnet-4-5-20250514' (balanced), 'claude-opus-4-0-20250514' (most capable)
-    // Or use aliases: 'haiku', 'sonnet', 'opus'
+    // Anthropic — model string is free-form (aliases: haiku, sonnet, opus)
     anthropic: {
       model: 'claude-haiku-4-5-20251001',
       apiKey: process.env.ANTHROPIC_API_KEY,
     },
 
-    // OpenAI config
-    // Models: 'gpt-4o-mini', 'codex-mini-latest' (or alias: 'codex')
+    // OpenAI — model string is free-form (aliases: gpt-4o-mini, codex)
     // openai: {
     //   model: 'gpt-4o-mini',
     //   apiKey: process.env.OPENAI_API_KEY,
     // },
+  },
+
+  steep: {
+    // Extractor vendor mirrors soak unless overridden. Same free-form model IDs.
+    // extractor: 'anthropic',
+    // anthropic: { model: 'claude-haiku-4-5-20251001' },
   },
 
   output: {

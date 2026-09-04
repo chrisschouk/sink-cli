@@ -5,6 +5,8 @@ packages:
 allowBuilds:
   # esbuild's postinstall fetches its platform binary; vitest needs it.
   esbuild: true
+  # posthog-js pulls core-js; its install script is optional — explicitly deny.
+  core-js: false
 
 overrides:
   # ws < 8.20.1 has an uninitialized-memory-disclosure advisory (GHSA-58qx);

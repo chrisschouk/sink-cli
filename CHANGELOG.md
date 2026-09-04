@@ -5,6 +5,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Model-agnostic LLM selection.** `--model <id>` accepts any Anthropic or
+  OpenAI model string; `--provider` takes vendors (`anthropic|openai`) or
+  shortcuts. The same choice applies to soak and steep. Web BYOK panel offers
+  either vendor plus a free-form model field.
+- `GET /api/health` for uptime checks and the OpenAPI catalog.
+- `sink demo` documented in the README command table.
+
+### Fixed
+
+- Vercel git deploys were building the repo root and looking for `public/`,
+  ignoring `web/vercel.json`. Added a root `vercel.json` that builds the web
+  app to `web/dist` and serves edge functions from root `api/`.
+- CI install failed under pnpm 11 supply-chain checks because the SheetJS CDN
+  `xlsx` tarball had no lockfile integrity hash. Integrity is now recorded.
+- `pnpm-workspace.yaml` left `core-js` as an unresolved `allowBuilds` placeholder
+  (`set this to true or false`), which also fails pnpm 11 installs. Explicitly
+  denied.
+- Agent discovery docs claimed OAuth, MCP HTTP, and registration endpoints that
+  do not exist. Discovery files now match the real surface: CLI, browser demo,
+  `/api/health`, and `/api/firecrawl-proxy`.
+- README pointed at the Vercel preview hostname and an outdated org path; primary
+  demo link is datasink.dev and GitHub links use `chrisschouk/sink-cli`.
+- README provider flags and tagline brought in line with the CLI (`haiku|sonnet|…`,
+  four-phase strapline).
+
 ## [0.4.0] - 2026-06-11
 
 ### Added

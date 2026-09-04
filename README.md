@@ -5,11 +5,11 @@
 ```
 
 [![npm version](https://img.shields.io/npm/v/datasink.svg)](https://www.npmjs.com/package/datasink)
-[![CI](https://github.com/totalaudiopromo/sink-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/totalaudiopromo/sink-cli/actions/workflows/ci.yml)
+[![CI](https://github.com/chrisschouk/sink-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/chrisschouk/sink-cli/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node](https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg)](https://nodejs.org)
 
-**Data hygiene for music PR.** Scrub, rinse, and soak your contact lists.
+**Data hygiene for music PR.** Scrub, rinse, soak, and steep your contact lists.
 
 > The product is **sink**; the binary is `sink`. It's published on npm as
 > [`datasink`](https://www.npmjs.com/package/datasink) because the `sink` name
@@ -32,13 +32,15 @@
 
 ## Try it in the browser
 
-**[sink-web-indol.vercel.app](https://sink-web-indol.vercel.app)** — drop a CSV
-and watch the real engine run client-side. Your contacts never leave your
-browser; only domain names are checked against DNS. Source in [`web/`](web/).
+**[datasink.dev](https://datasink.dev)** — drop a CSV or XLSX and watch the real
+engine run client-side. Scrub and rinse stay in your browser; only domain names
+are checked against DNS. AI phases (soak/steep) use your own API keys. Source in
+[`web/`](web/).
 
 ## Quick Start
 
 ```bash
+npx datasink demo                        # sample data, no file needed
 npx datasink scrub contacts.csv          # validate emails
 npx datasink rinse contacts.csv          # deduplicate
 npx datasink wash contacts.csv           # full pipeline
@@ -56,6 +58,7 @@ sink scrub contacts.csv
 | Command               | Description                                   |
 | --------------------- | --------------------------------------------- |
 | `sink`                | Interactive menu (no args)                    |
+| `sink demo`           | Full pipeline on built-in sample data         |
 | `sink wash <file>`    | Full pipeline: scrub + rinse + soak + steep   |
 | `sink scrub <file>`   | Validate & clean emails                       |
 | `sink rinse <file>`   | Deduplicate contacts                          |
@@ -65,6 +68,10 @@ sink scrub contacts.csv
 | `sink inspect <file>` | Data quality score                            |
 | `sink drain <file>`   | Convert between formats                       |
 | `sink tui <file>`     | Full TUI dashboard                            |
+
+> Soak and steep need provider keys (`ANTHROPIC_API_KEY` or `OPENAI_API_KEY`;
+> steep also needs `FIRECRAWL_API_KEY`). Without keys those phases are skipped
+> with a clear warning — scrub, rinse, spot, inspect, and demo still work.
 
 ## Why sink?
 
@@ -103,7 +110,9 @@ Enriches contacts with AI:
 - Submission guidelines
 - Pitch tips
 
-Supports **Anthropic** (Claude Haiku) and **OpenAI** (GPT-4o-mini).
+Supports **Anthropic** and **OpenAI** with any model ID those vendors accept.
+CLI shortcuts (`haiku`, `sonnet`, `opus`, `gpt-4o-mini`, `codex`) are convenience
+defaults only — use `--provider anthropic|openai --model <id>` for anything else.
 
 ### Steep
 
@@ -120,7 +129,8 @@ One scrape powers every contact at that outlet. The CLI caches scrapes in
 memory for the duration of a run; a persistent 30-day cache is available to
 programmatic consumers that supply their own `CacheAdapter` (see below).
 
-Requires `FIRECRAWL_API_KEY` and an LLM provider key. Phase is silently skipped if creds are missing.
+Requires `FIRECRAWL_API_KEY` and an LLM provider key. Skipped with a warning if
+creds are missing.
 
 ## Global Flags
 
@@ -133,7 +143,8 @@ Requires `FIRECRAWL_API_KEY` and an LLM provider key. Phase is silently skipped 
 -q, --quiet                Suppress all output except errors
 --json                     JSON stdout (for piping)
 --no-colour                Disable colours
---provider <name>          Enrichment provider (anthropic|openai)
+--provider <name>          LLM vendor or shortcut (anthropic|openai|haiku|sonnet|opus|codex|gpt-4o-mini)
+--model <id>               Any Anthropic/OpenAI model ID (overrides shortcut default)
 ```
 
 ## Exit Codes
@@ -148,18 +159,24 @@ Requires `FIRECRAWL_API_KEY` and an LLM provider key. Phase is silently skipped 
 
 ## Provider Setup
 
+Sink is model-agnostic across Anthropic and OpenAI. Shortcuts pick a convenient
+default; `--model` accepts any current model ID from that vendor. The same
+choice applies to both soak and steep.
+
 ### Anthropic
 
 ```bash
 export ANTHROPIC_API_KEY=sk-ant-...
-sink soak contacts.csv --provider anthropic
+sink soak contacts.csv --provider haiku
+sink soak contacts.csv --provider anthropic --model claude-sonnet-4-5-20250514
 ```
 
 ### OpenAI
 
 ```bash
 export OPENAI_API_KEY=sk-...
-sink soak contacts.csv --provider openai
+sink soak contacts.csv --provider gpt-4o-mini
+sink soak contacts.csv --provider openai --model gpt-4.1-mini
 ```
 
 ## Input Format
@@ -256,7 +273,7 @@ Tools I build for music PR, by [Chris Schofield](https://x.com/chrisschouk). Par
 | [SpotCheck](https://spotcheck.cc) | Spotify playlist validation |
 | [Newsjack](https://newsjack.cc) | Music industry newsjacking |
 | [Podflow](https://github.com/totalaudiopromo/podflow) | Podcast intelligence for music PR |
-| [Sink](https://github.com/totalaudiopromo/sink-cli) | Contact data hygiene CLI |
+| [Sink](https://github.com/chrisschouk/sink-cli) | Contact data hygiene CLI |
 
 Questions? Reach me on [X/@chrisschouk](https://x.com/chrisschouk) or [info@totalaudiopromo.com](mailto:info@totalaudiopromo.com).
 

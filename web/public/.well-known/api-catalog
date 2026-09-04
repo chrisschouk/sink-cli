@@ -1,7 +1,7 @@
 {
   "linkset": [
     {
-      "anchor": "https://datasink.dev/api",
+      "anchor": "https://datasink.dev/",
       "service-desc": [
         {
           "href": "https://datasink.dev/docs/openapi.json",
@@ -10,8 +10,8 @@
       ],
       "service-doc": [
         {
-          "href": "https://datasink.dev/docs/api",
-          "type": "text/html"
+          "href": "https://datasink.dev/llms-full.txt",
+          "type": "text/plain"
         }
       ],
       "status": [

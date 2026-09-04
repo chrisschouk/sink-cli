@@ -5,7 +5,7 @@ Thanks for your interest in contributing. This guide covers what you need to get
 ## Dev Setup
 
 ```bash
-git clone https://github.com/totalaudiopromo/sink-cli.git
+git clone https://github.com/chrisschouk/sink-cli.git
 cd sink-cli
 pnpm install
 pnpm build
@@ -20,6 +20,8 @@ pnpm build
 | `pnpm test` | Run all tests (Vitest) |
 | `pnpm test:watch` | Tests in watch mode |
 | `pnpm typecheck` | Type-check without emitting |
+| `pnpm lint` | ESLint on `src/` and `test/` |
+| `pnpm format:check` | Prettier check |
 
 ## Running locally
 
@@ -67,14 +69,18 @@ src/
     scrub/            Email validation, parsing, typo correction
     rinse/            Deduplication strategies
     soak/             AI enrichment providers
+    steep/            Outlet channel discovery (Firecrawl + LLM)
   output/             CSV/JSON/JSONL formatters
   ui/                 Terminal UI (format helpers, TUI, interactive)
   utils/              MX cache, helpers
+web/                  Browser demo (Vite + React) → datasink.dev
+api/                  Vercel edge functions (health, Firecrawl proxy)
 test/
   fixtures/           Sample CSV files
   scrub/              Scrub phase tests
   rinse/              Rinse phase tests
   soak/               Provider tests
+  steep/              Steep phase tests
   pipeline.test.ts    Integration tests
 ```
 

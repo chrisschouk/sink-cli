@@ -93,17 +93,23 @@ export function useEngine() {
       let recs = ctx.records
       const next: WebStats = { ...ctx.stats }
 
-      if (keys.anthropic) {
-        const soak = await runSoakBrowser(recs, replay.push, { anthropicKey: keys.anthropic })
+      if (keys.apiKey) {
+        const soak = await runSoakBrowser(recs, replay.push, {
+          provider: keys.provider,
+          apiKey: keys.apiKey,
+          model: keys.model,
+        })
         recs = soak.records
         next.enriched = soak.enriched
         next.enrichFailed = soak.failed
       }
 
-      if (keys.anthropic && keys.firecrawl) {
+      if (keys.apiKey && keys.firecrawl) {
         const steep = await runSteepBrowser(recs, replay.push, {
-          anthropicKey: keys.anthropic,
+          provider: keys.provider,
+          apiKey: keys.apiKey,
           firecrawlKey: keys.firecrawl,
+          model: keys.model,
         })
         recs = steep.records
         next.outletsScraped = steep.outletsScraped

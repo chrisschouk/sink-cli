@@ -255,6 +255,29 @@
   margin-bottom: 14px;
 }
 
+.keypanel-vendor {
+  border: 0;
+  margin: 0 0 12px;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: center;
+  font-size: 12px;
+}
+
+.keypanel-vendor legend {
+  padding: 0;
+  margin: 0 4px 0 0;
+}
+
+.keypanel-radio {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
 .keypanel-field {
   display: flex;
   flex-direction: column;

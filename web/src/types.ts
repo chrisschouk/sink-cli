@@ -60,7 +60,10 @@ export interface WebStats {
 
 /** BYO keys, held in memory only (optionally mirrored to sessionStorage). */
 export interface ApiKeys {
-  anthropic?: string
+  provider: 'anthropic' | 'openai'
+  apiKey: string
+  /** Free-form Anthropic/OpenAI model ID (optional — defaults per provider). */
+  model?: string
   firecrawl?: string
 }
 

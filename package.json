@@ -1,7 +1,7 @@
 {
   "name": "datasink",
   "version": "0.4.0",
-  "description": "sink — data hygiene for music PR. Scrub, rinse, soak, steep your contact lists. The `sink` CLI, published as datasink.",
+  "description": "sink \u2014 data hygiene for music PR. Scrub, rinse, soak, steep your contact lists. The `sink` CLI, published as datasink.",
   "license": "MIT",
   "type": "module",
   "bin": {
@@ -76,13 +76,13 @@
     "csv",
     "data-hygiene"
   ],
-  "homepage": "https://github.com/totalaudiopromo/sink-cli#readme",
+  "homepage": "https://datasink.dev",
   "bugs": {
-    "url": "https://github.com/totalaudiopromo/sink-cli/issues"
+    "url": "https://github.com/chrisschouk/sink-cli/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/totalaudiopromo/sink-cli.git"
+    "url": "https://github.com/chrisschouk/sink-cli.git"
   },
   "author": "Total Audio Promo",
   "files": [

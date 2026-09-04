@@ -1,21 +1,31 @@
 /**
  * Browser soak runner — AI contact enrichment, client-side, BYO key.
  *
- * Mirrors src/phases/soak/index.ts but: constructs the Anthropic client with
- * `dangerouslyAllowBrowser: true` (the key is the user's own, held in memory and
- * never sent to our servers), reuses the pure prompt/confidence helpers from
- * datasink/core, and narrates progress as TerminalLine events instead of ora.
+ * Model-agnostic across Anthropic and OpenAI: pass any model ID the vendor
+ * accepts. Keys are the user's own (dangerouslyAllowBrowser); never sent to
+ * our servers. Progress is narrated as TerminalLine events.
  */
 
 import Anthropic from '@anthropic-ai/sdk'
+import OpenAI from 'openai'
 import { buildPrompt, calculateConfidence } from 'datasink/core'
 import type { SinkRecord, SoakResult } from 'datasink/core'
 import type { OnLine } from './engine'
 import { line } from './engine'
 
-const DEFAULT_MODEL = 'claude-haiku-4-5-20251001'
+const DEFAULT_MODELS = {
+  anthropic: 'claude-haiku-4-5-20251001',
+  openai: 'gpt-4o-mini',
+} as const
+
 const RATE_LIMIT_MS = 200
 const MAX_RETRIES = 2
+
+export interface SoakBrowserOpts {
+  provider: 'anthropic' | 'openai'
+  apiKey: string
+  model?: string
+}
 
 export interface SoakRunResult {
   records: SinkRecord[]
@@ -38,12 +48,12 @@ async function withRetry<T>(fn: () => Promise<T>, maxRetries: number): Promise<T
   throw lastError
 }
 
-function parseEnrichment(text: string): SoakResult {
+function parseEnrichment(text: string, provider: string): SoakResult {
   try {
     const cleaned = text.replace(/^```(?:json)?\n?/m, '').replace(/\n?```$/m, '')
     const data = JSON.parse(cleaned)
     return {
-      provider: 'anthropic',
+      provider,
       platform: data.platform,
       platformType: data.platformType,
       roleDetail: data.roleDetail,
@@ -57,7 +67,7 @@ function parseEnrichment(text: string): SoakResult {
       confidence: calculateConfidence(data),
     }
   } catch {
-    return { provider: 'anthropic', confidence: 'none', reasoning: 'Failed to parse response' }
+    return { provider, confidence: 'none', reasoning: 'Failed to parse response' }
   }
 }
 
@@ -68,15 +78,40 @@ function detailFor(soak: SoakResult): string {
   return bits.join(' · ')
 }
 
+async function complete(
+  opts: SoakBrowserOpts,
+  model: string,
+  prompt: string,
+): Promise<string> {
+  if (opts.provider === 'openai') {
+    const client = new OpenAI({ apiKey: opts.apiKey, dangerouslyAllowBrowser: true })
+    const response = await client.chat.completions.create({
+      model,
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: 512,
+      response_format: { type: 'json_object' },
+    })
+    return response.choices[0]?.message?.content ?? ''
+  }
+
+  const client = new Anthropic({ apiKey: opts.apiKey, dangerouslyAllowBrowser: true })
+  const response = await client.messages.create({
+    model,
+    max_tokens: 512,
+    messages: [{ role: 'user', content: prompt }],
+  })
+  const block = response.content[0]
+  return block?.type === 'text' ? block.text : ''
+}
+
 export async function runSoakBrowser(
   records: SinkRecord[],
   onLine: OnLine,
-  opts: { anthropicKey: string; model?: string },
+  opts: SoakBrowserOpts,
 ): Promise<SoakRunResult> {
   onLine(line('phase-header', { name: 'Soak', label: 'AI contact enrichment' }))
 
-  const client = new Anthropic({ apiKey: opts.anthropicKey, dangerouslyAllowBrowser: true })
-  const model = opts.model ?? DEFAULT_MODEL
+  const model = opts.model?.trim() || DEFAULT_MODELS[opts.provider]
 
   const enrichable: { index: number; record: SinkRecord }[] = []
   for (let i = 0; i < records.length; i++) {
@@ -91,7 +126,12 @@ export async function runSoakBrowser(
   let failed = 0
 
   if (enrichable.length === 0) {
-    onLine(line('plain', { text: 'No enrichable contacts (need a valid, non-duplicate email).', dim: true }))
+    onLine(
+      line('plain', {
+        text: 'No enrichable contacts (need a valid, non-duplicate email).',
+        dim: true,
+      }),
+    )
     onLine(line('blank'))
     return { records: result, enriched, failed }
   }
@@ -100,22 +140,17 @@ export async function runSoakBrowser(
     const { index, record } = enrichable[i]
     let soak: SoakResult
     try {
-      const text = await withRetry(async () => {
-        const response = await client.messages.create({
-          model,
-          max_tokens: 512,
-          messages: [{ role: 'user', content: buildPrompt(record) }],
-        })
-        const block = response.content[0]
-        return block?.type === 'text' ? block.text : ''
-      }, MAX_RETRIES)
-      soak = parseEnrichment(text)
+      const text = await withRetry(
+        () => complete(opts, model, buildPrompt(record)),
+        MAX_RETRIES,
+      )
+      soak = parseEnrichment(text, opts.provider)
       if (soak.confidence === 'none') failed += 1
       else enriched += 1
     } catch (err) {
       failed += 1
       soak = {
-        provider: 'anthropic',
+        provider: opts.provider,
         confidence: 'none',
         reasoning: err instanceof Error ? err.message : 'Enrichment failed',
       }

@@ -1,5 +1,4 @@
-Contact: mailto:security@totalaudiopromo.com
+Contact: mailto:info@totalaudiopromo.com
 Expires: 2027-12-31T23:59:59.000Z
 Preferred-Languages: en
 Canonical: https://datasink.dev/.well-known/security.txt
-Policy: https://datasink.dev/security

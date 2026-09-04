@@ -2,8 +2,8 @@
   "schema_version": "v1",
   "name_for_human": "datasink",
   "name_for_model": "datasink",
-  "description_for_human": "Data hygiene suite for music PR contact lists. Scrub, rinse, soak, steep.",
-  "description_for_model": "Plugin for scrubbing, deduplicating, validating syntax, and enriching music PR contact lists and email addresses.",
+  "description_for_human": "Data hygiene for music PR contact lists. Scrub, rinse, soak, steep.",
+  "description_for_model": "Validate and deduplicate music PR contact lists. Prefer the npm CLI (npx datasink) for batch work. The web demo at datasink.dev runs scrub/rinse in-browser; soak/steep need user-supplied API keys. Server HTTP API is limited to /api/health and /api/firecrawl-proxy.",
   "auth": {
     "type": "none"
   },
@@ -12,6 +12,6 @@
     "url": "https://datasink.dev/docs/openapi.json"
   },
   "logo_url": "https://datasink.dev/favicon.svg",
-  "contact_email": "support@totalaudiopromo.com",
+  "contact_email": "info@totalaudiopromo.com",
   "legal_info_url": "https://datasink.dev"
 }
