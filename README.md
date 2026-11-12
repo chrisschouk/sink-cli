@@ -13,10 +13,10 @@
 
 > The product is **sink**; the binary is `sink`. It's published on npm as
 > [`datasink`](https://www.npmjs.com/package/datasink) because the `sink` name
-> was already taken there. One tool, one name — plus an npm address.
+> was already taken there.
 
 <p align="center">
-  <img src="docs/demos/sink-quick.gif" alt="sink-cli quick demo" width="720" />
+  <img src="docs/demos/sink-quick.gif" alt="sink quick demo" width="720" />
 </p>
 
 > _Demo uses fictional contacts for illustration._
@@ -24,7 +24,7 @@
 <details>
 <summary>Full workflow demo (scrub, rinse, inspect)</summary>
 <p align="center">
-  <img src="docs/demos/sink-full.gif" alt="sink-cli full workflow demo" width="720" />
+  <img src="docs/demos/sink-full.gif" alt="sink full workflow demo" width="720" />
 </p>
 </details>
 
@@ -32,7 +32,7 @@
 
 ## Try it in the browser
 
-**[datasink.dev](https://datasink.dev)** — drop a CSV or XLSX and watch the real
+**[datasink.dev](https://datasink.dev)**: drop a CSV or XLSX and watch the real
 engine run client-side. Scrub and rinse stay in your browser; only domain names
 are checked against DNS. AI phases (soak/steep) use your own API keys. Source in
 [`web/`](web/).
@@ -71,13 +71,13 @@ sink scrub contacts.csv
 
 > Soak and steep need provider keys (`ANTHROPIC_API_KEY` or `OPENAI_API_KEY`;
 > steep also needs `FIRECRAWL_API_KEY`). Without keys those phases are skipped
-> with a clear warning — scrub, rinse, spot, inspect, and demo still work.
+> with a clear warning. Scrub, rinse, spot, inspect, and demo still work.
 
 ## Why sink?
 
-- **Built for music PR.** Knows BBC Radio 1 from Radio X, catches `bbc.com` → `bbc.co.uk` typos, flags role-based emails like `press@`. Not a generic email validator -- it understands your industry.
+- **Built for music PR.** Knows BBC Radio 1 from Radio X, catches `bbc.com` → `bbc.co.uk` typos, flags role-based emails like `press@`. The rules come from cleaning real radio and press lists.
 - **Zero config.** Point it at a CSV and go. Flexible header matching means it works with whatever your spreadsheet exports. No mapping files, no setup wizard.
-- **Four phases, one metaphor.** Scrub cleans. Rinse deduplicates. Soak enriches. Steep extracts channels from outlet sites. Run them individually or all at once with `wash`. Like doing the washing up, but for data.
+- **Four phases, one metaphor.** Scrub cleans. Rinse deduplicates. Soak enriches. Steep extracts channels from outlet sites. Run them individually or all at once with `wash`.
 
 ## Phases
 
@@ -96,9 +96,9 @@ Validates and cleans email addresses:
 
 Deduplicates and resolves identities:
 
-- **Exact email** -- case-insensitive dedup, keeps the richer record
-- **Fuzzy name** -- Jaro-Winkler similarity within same domain (threshold: 0.92)
-- **Cross-field** -- matches by phone across different emails
+- **Exact email**: case-insensitive dedup, keeps the richer record
+- **Fuzzy name**: Jaro-Winkler similarity within same domain (threshold: 0.92)
+- **Cross-field**: matches by phone across different emails
 
 ### Soak
 
@@ -112,7 +112,7 @@ Enriches contacts with AI:
 
 Supports **Anthropic** and **OpenAI** with any model ID those vendors accept.
 CLI shortcuts (`haiku`, `sonnet`, `opus`, `gpt-4o-mini`, `codex`) are convenience
-defaults only — use `--provider anthropic|openai --model <id>` for anything else.
+defaults only. Use `--provider anthropic|openai --model <id>` for anything else.
 
 ### Steep
 
@@ -123,7 +123,7 @@ Discovers contact channels by scraping the outlet's public website:
 - Submission format (mp3, link, form, mixed)
 - Recent presenters / journalists named on the site
 - Per-contact attribution: when a contact's name appears on the team / presenter page, their personal handles are extracted
-- Pitch hooks: specific, observable hooks pulled from the scraped text ("submissions form requires ISRC", "no submissions email -- portal only")
+- Pitch hooks: specific, observable hooks pulled from the scraped text ("submissions form requires ISRC", "no submissions email, portal only")
 
 One scrape powers every contact at that outlet. The CLI caches scrapes in
 memory for the duration of a run; a persistent 30-day cache is available to
@@ -262,20 +262,20 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for dev setup, code style, and PR guideli
 
 See [CHANGELOG.md](CHANGELOG.md) for release history.
 
-## Part of Total Audio
+## More from me
 
-Tools I build for music PR, by [Chris Schofield](https://x.com/chrisschouk). Part of [Total Audio Promo](https://totalaudiopromo.com).
+I'm [Chris Schofield](https://github.com/chrisschouk). I work in music PR and radio plugging in Brighton, and I build the tools I need for it.
 
-| Project | Description |
-|---------|-------------|
-| [TAP](https://totalaudiopromo.com) | Campaign management for music PR agencies |
-| [totalaud.io](https://totalaud.io) | Release planning for emerging artists |
-| [SpotCheck](https://spotcheck.cc) | Spotify playlist validation |
-| [Newsjack](https://newsjack.cc) | Music industry newsjacking |
-| [Podflow](https://github.com/totalaudiopromo/podflow) | Podcast intelligence for music PR |
-| [Sink](https://github.com/chrisschouk/sink-cli) | Contact data hygiene CLI |
+| Project | What it does |
+| --- | --- |
+| [Total Audio Promo](https://totalaudiopromo.com) | Release platform for independent artists |
+| [SpotCheck](https://spotcheck.cc) | Bot risk scores for Spotify playlists |
+| [NewsJack](https://newsjack.cc) | Music industry news, scored and drafted into posts |
+| [datasink](https://github.com/chrisschouk/sink-cli) | Contact list hygiene for music PR |
+| [podflow](https://github.com/chrisschouk/podflow) | Podcast digests and guest research |
+| [audx](https://github.com/chrisschouk/audx) | Terminal DAW with Ableton export |
 
-Questions? Reach me on [X/@chrisschouk](https://x.com/chrisschouk) or [info@totalaudiopromo.com](mailto:info@totalaudiopromo.com).
+Questions or bugs: open an issue, or find me on [X](https://x.com/chrisschouk).
 
 ## Licence
 
